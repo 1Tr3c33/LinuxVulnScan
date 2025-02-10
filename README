@@ -1,0 +1,22 @@
+#Herramienta de Escaneo de Máquinas Virtuales Linux
+
+Esta herramienta automatiza tareas de recopilación de información, escaneo de puertos, y análisis de escalada de privilegios en sistemas Linux.
+Su uso está recomendado para comprobar fallos y vulnerabilidades en nuestras máquinas Linux. 
+
+## Requisitos
+
+-Sistema Operativo Linux
+-Python 3.x
+-Privilegios de superusuario para ejecutar ciertas partes de la herramienta
+-Herramientas previamente instaladas: Nmap, Gobuster, Nikto
+
+## Instalación 
+
+Para la instalación del proyecto debes seguir estos pasos:
+
+1.- git clone <Url_del_repositorio>
+2.- de <Nombre_del_directorio>
+3.- chmod +x setup.sh
+4.- ./setup.sh
+
+Y ya dispondremos de la herramienta instalada y lista para ejecutar.
