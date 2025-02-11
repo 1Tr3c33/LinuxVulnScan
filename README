@@ -8,15 +8,13 @@ Su uso está recomendado para comprobar fallos y vulnerabilidades en nuestras m�
 -Sistema Operativo Linux
 -Python 3.x
 -Privilegios de superusuario para ejecutar ciertas partes de la herramienta
--Herramientas previamente instaladas: Nmap, Gobuster, Nikto
 
 ## Instalación 
 
 Para la instalación del proyecto debes seguir estos pasos:
 
 1.- git clone <Url_del_repositorio>
-2.- de <Nombre_del_directorio>
-3.- chmod +x setup.sh
-4.- ./setup.sh
+2.- cd <Nombre_del_directorio>
+3.- ejecutar main.py para iniciar la herramienta
 
-Y ya dispondremos de la herramienta instalada y lista para ejecutar.
+Y ya dispondremos de la herramienta instalada y lista para ejecutar. Los reportes los obtendremos en el propio directorio de la herramienta y se generara un nuevo directorio con todos ellos.
