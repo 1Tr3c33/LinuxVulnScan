@@ -1,33 +1,21 @@
 import os
 import subprocess
 
-
 def analyze_running_processes():
-    """Analiza los procesos en ejecución y el usuario que los ejecuta."""
+    """Analiza los procesos en ejecuciÃ³n y el usuario que los ejecuta."""
     try:
         processes = subprocess.getoutput("ps aux")
         return processes
     except Exception as e:
-        return f"Error al analizar los procesos en ejecución: {str(e)}"
-
+        return f"Error al analizar los procesos en ejecuciÃ³n: {str(e)}"
 
 def search_credential_processes():
-    """Busca procesos que podrían almacenar credenciales en memoria."""
+    """Busca procesos que podrÃ­an almacenar credenciales en memoria."""
     try:
         suspicious_processes = subprocess.getoutput("ps aux | grep -i 'ssh\\|login\\|passwd\\|gpg\\|vault'")
         return suspicious_processes if suspicious_processes else "No se encontraron procesos sospechosos."
     except Exception as e:
-        return f"Error al buscar procesos que podrían almacenar credenciales: {str(e)}"
-
-
-def find_binaries_with_risky_permissions():
-    """Busca binarios de procesos en ejecución con permisos inusuales."""
-    try:
-        risky_binaries = subprocess.getoutput("find /proc/*/exe -type f -exec ls -l {} \\; 2>/dev/null | grep 'rwx'")
-        return risky_binaries if risky_binaries else "No se encontraron binarios con permisos inusuales."
-    except Exception as e:
-        return f"Error al buscar binarios con permisos riesgosos: {str(e)}"
-
+        return f"Error al buscar procesos que podrÃ­an almacenar credenciales: {str(e)}"
 
 def analyze_cron_jobs():
     """Analiza tareas programadas en cron, anacron, incron y at."""
@@ -45,50 +33,58 @@ def analyze_cron_jobs():
     except Exception as e:
         return f"Error al analizar tareas programadas: {str(e)}"
 
-
 def analyze_systemd_timers():
-    """Analiza timers configurados en el sistema a través de systemd."""
+    """Analiza timers configurados en el sistema a travÃ©s de systemd."""
     try:
         timers = subprocess.getoutput("systemctl list-timers --all")
         return timers if timers else "No se encontraron timers configurados."
     except Exception as e:
         return f"Error al analizar timers en systemd: {str(e)}"
 
+def create_report_directory():
+    """Crea la carpeta 'report' si no existe."""
+    report_dir = os.path.join(os.getcwd(), "report")
+    if not os.path.exists(report_dir):
+        os.makedirs(report_dir)
+    return report_dir
+
+def gather_data():
+    """Recoge toda la informaciÃ³n del mÃ³dulo y la devuelve como un diccionario."""
+    return {
+        "running_processes": analyze_running_processes(),
+        "suspicious_processes": search_credential_processes(),
+        "cron_jobs": analyze_cron_jobs(),
+        "systemd_timers": analyze_systemd_timers(),
+    }
 
 def generate_report(data, output_file="crons_timers_report.txt"):
     """Genera un informe en texto plano con los resultados obtenidos."""
     try:
-        with open(output_file, "w") as f:
-            f.write("=== Informe de Análisis de Procesos, Cron Jobs y Timers ===\n")
-            f.write("\n--- Procesos en Ejecución ---\n")
-            f.write(data.get("running_processes", "No se pudo obtener información sobre procesos.\n"))
-
-            f.write("\n--- Procesos que podrían Almacenar Credenciales ---\n")
-            f.write(data.get("credential_processes", "No se encontraron procesos sospechosos.\n"))
-
-            f.write("\n--- Binarios con Permisos Inusuales ---\n")
-            f.write(data.get("risky_binaries", "No se encontraron binarios con permisos inusuales.\n"))
-
-            f.write("\n--- Cron Jobs ---\n")
+        # Crear el directorio report
+        report_dir = create_report_directory()
+        report_path = os.path.join(report_dir, output_file)
+        
+        with open(report_path, "w") as f:
+            f.write("=== Informe de Cron Jobs y Timers ===\n")
+            
+            f.write("\n--- Procesos en EjecuciÃ³n ---\n")
+            f.write(data.get("running_processes", "No se pudo obtener la informaciÃ³n de los procesos.\n"))
+            
+            f.write("\n--- Procesos que podrÃ­an Almacenar Credenciales ---\n")
+            f.write(data.get("suspicious_processes", "No se encontraron procesos sospechosos.\n"))
+            
+            f.write("\n--- Tareas Programadas ---\n")
             cron_jobs = data.get("cron_jobs", {})
-            for job_type, jobs in cron_jobs.items():
-                f.write(f"{job_type}:\n{jobs}\n")
-
-            f.write("\n--- Systemd Timers ---\n")
+            for key, value in cron_jobs.items():
+                f.write(f"{key}:\n{value}\n")
+            
+            f.write("\n--- Timers del Sistema ---\n")
             f.write(data.get("systemd_timers", "No se encontraron timers configurados.\n"))
-
-        print(f"[+] Informe generado: {output_file}")
+        
+        print(f"[+] Informe generado: {report_path}")
     except Exception as e:
         print(f"[-] Error al generar el informe: {str(e)}")
 
-
 if __name__ == "__main__":
-    # Ejecutar todas las funciones y generar el informe
-    data = {
-        "running_processes": analyze_running_processes(),
-        "credential_processes": search_credential_processes(),
-        "risky_binaries": find_binaries_with_risky_permissions(),
-        "cron_jobs": analyze_cron_jobs(),
-        "systemd_timers": analyze_systemd_timers(),
-    }
+    data = gather_data()
     generate_report(data)
