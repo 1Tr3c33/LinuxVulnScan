@@ -1,20 +1,20 @@
-#Herramienta de Escaneo de Máquinas Virtuales Linux
+#Linux Virtual Machine Scanning Tool
 
-Esta herramienta automatiza tareas de recopilación de información, escaneo de puertos, y análisis de escalada de privilegios en sistemas Linux.
-Su uso está recomendado para comprobar fallos y vulnerabilidades en nuestras máquinas Linux. 
+This tool automates information gathering, port scanning, and privilege escalation analysis tasks on Linux systems.
+Its use is recommended to check for bugs and vulnerabilities in our Linux machines. 
 
-## Requisitos
+##  Requirements
 
--Sistema Operativo Linux
+-Linux Operating System
 -Python 3.x
--Privilegios de superusuario para ejecutar ciertas partes de la herramienta
+-Superuser privileges to run certain parts of the tool
 
-## Instalación 
+## Installation 
 
-Para la instalación del proyecto debes seguir estos pasos:
+To install the project you must follow these steps:
 
-1.- git clone <Url_del_repositorio>
-2.- cd <Nombre_del_directorio>
-3.- ejecutar main.py para iniciar la herramienta
+1.- git clone <Repository_url>
+2.- cd <Directory_name>
+3.- run main.py to start the tool
 
-Y ya dispondremos de la herramienta instalada y lista para ejecutar. Los reportes los obtendremos en el propio directorio de la herramienta y se generara un nuevo directorio con todos ellos.
+And we will have the tool installed and ready to run. The reports will be obtained in the tool's own directory and a new directory will be generated with all of them.
