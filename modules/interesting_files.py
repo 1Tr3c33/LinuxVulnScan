@@ -1,7 +1,5 @@
 import os
 import subprocess
-from pathlib import Path
-
 
 def list_shell_scripts_in_path():
     """Enumera archivos .sh en los directorios definidos en la variable PATH."""
@@ -14,102 +12,89 @@ def list_shell_scripts_in_path():
     except Exception as e:
         return f"Error al buscar scripts .sh: {str(e)}"
 
-
 def find_broken_symlinks():
-    """Identifica enlaces simbólicos rotos en los directorios PATH."""
+    """Identifica enlaces simbÃ³licos rotos en los directorios PATH."""
     try:
         paths = os.getenv("PATH", "").split(":")
         broken_symlinks = []
         for path in paths:
             broken_symlinks += subprocess.getoutput(f"find {path} -xtype l 2>/dev/null").splitlines()
-        return broken_symlinks if broken_symlinks else "No se encontraron enlaces simbólicos rotos."
+        return broken_symlinks if broken_symlinks else "No se encontraron enlaces simbÃ³licos rotos."
     except Exception as e:
-        return f"Error al buscar enlaces simbólicos rotos: {str(e)}"
+        return f"Error al buscar enlaces simbÃ³licos rotos: {str(e)}"
 
-
-def find_executables_added_by_users():
-    """Busca archivos ejecutables que podrían haber sido añadidos por usuarios en el sistema."""
+def find_sensitive_php_configs():
+    """Busca contraseÃ±as o configuraciones sensibles en archivos PHP."""
     try:
-        executables = subprocess.getoutput("find / -type f -perm -u+x 2>/dev/null")
-        return executables if executables else "No se encontraron ejecutables añadidos por usuarios."
+        php_files = subprocess.getoutput("grep -iR 'password\\|db_' /var/www 2>/dev/null")
+        return php_files if php_files else "No se encontraron configuraciones sensibles en archivos PHP."
     except Exception as e:
-        return f"Error al buscar ejecutables: {str(e)}"
+        return f"Error al analizar archivos PHP: {str(e)}"
 
-
-def analyze_opt_directory():
-    """Verifica si el directorio /opt contiene elementos."""
+def find_backup_directories_and_files():
+    """Busca directorios y archivos de respaldo."""
     try:
-        contents = os.listdir('/opt')
-        return contents if contents else "/opt está vacío."
-    except FileNotFoundError:
-        return "/opt no existe en este sistema."
-    except Exception as e:
-        return f"Error al analizar /opt: {str(e)}"
-
-
-def find_unexpected_root_files():
-    """Busca elementos inesperados en el directorio raíz."""
-    try:
-        common_dirs = set(["bin", "boot", "dev", "etc", "home", "lib", "opt", "proc", "root", "sbin", "tmp", "usr", "var"])
-        root_contents = set(os.listdir('/'))
-        unexpected = root_contents - common_dirs
-        return unexpected if unexpected else "No se encontraron elementos inesperados en el directorio raíz."
-    except Exception as e:
-        return f"Error al analizar el directorio raíz: {str(e)}"
-
-
-def writable_logs_and_logrotate():
-    """Busca archivos de registro .log que sean escribibles y verifica logrotate."""
-    try:
-        writable_logs = subprocess.getoutput("find /var/log -type f -name '*.log' -writable 2>/dev/null")
-        logrotate_version = subprocess.getoutput("logrotate --version 2>/dev/null")
+        backup_dirs = subprocess.getoutput("find / -type d -name '*backup*' 2>/dev/null")
+        backup_files = subprocess.getoutput("find / -type f -name '*.bak' -o -name '*.backup' 2>/dev/null")
         return {
-            "Writable Logs": writable_logs if writable_logs else "No se encontraron logs escribibles.",
-            "Logrotate Version": logrotate_version if logrotate_version else "logrotate no está instalado."
+            "Backup Directories": backup_dirs if backup_dirs else "No se encontraron directorios de respaldo.",
+            "Backup Files": backup_files if backup_files else "No se encontraron archivos de respaldo.",
         }
     except Exception as e:
-        return f"Error al analizar logs: {str(e)}"
+        return f"Error al buscar respaldos: {str(e)}"
 
+def create_report_directory():
+    """Crea la carpeta 'report' si no existe."""
+    report_dir = os.path.join(os.getcwd(), "report")
+    if not os.path.exists(report_dir):
+        os.makedirs(report_dir)
+    return report_dir
+
+def gather_data():
+    """Recoge toda la informaciÃ³n del mÃ³dulo y la devuelve como un diccionario."""
+    return {
+        "shell_scripts": list_shell_scripts_in_path(),
+        "broken_symlinks": find_broken_symlinks(),
+        "php_configs": find_sensitive_php_configs(),
+        "backups": find_backup_directories_and_files(),
+    }
 
 def generate_report(data, output_file="interesting_files_report.txt"):
     """Genera un informe en texto plano con los resultados obtenidos."""
     try:
-        with open(output_file, "w") as f:
-            f.write("=== Informe de Archivos y Configuraciones Interesantes ===\n")
+        # Crear el directorio report
+        report_dir = create_report_directory()
+        report_path = os.path.join(report_dir, output_file)
+        
+        with open(report_path, "w") as f:
+            f.write("=== Informe de Archivos Interesantes ===\n")
             
             f.write("\n--- Scripts .sh en PATH ---\n")
-            f.write(data.get("shell_scripts", "No se pudo obtener información.\n"))
+            shell_scripts = data.get("shell_scripts", [])
+            if isinstance(shell_scripts, list):
+                f.write("\n".join(shell_scripts) + "\n")
+            else:
+                f.write(shell_scripts + "\n")
             
-            f.write("\n--- Enlaces Simbólicos Rotos ---\n")
-            f.write(data.get("broken_symlinks", "No se pudo obtener información.\n"))
+            f.write("\n--- Enlaces SimbÃ³licos Rotos ---\n")
+            broken_symlinks = data.get("broken_symlinks", [])
+            if isinstance(broken_symlinks, list):
+                f.write("\n".join(broken_symlinks) + "\n")
+            else:
+                f.write(broken_symlinks + "\n")
             
-            f.write("\n--- Ejecutables Añadidos por Usuarios ---\n")
-            f.write(data.get("executables", "No se pudo obtener información.\n"))
+            f.write("\n--- Configuraciones Sensibles en PHP ---\n")
+            f.write(data.get("php_configs", "No se encontraron configuraciones sensibles en PHP.\n"))
             
-            f.write("\n--- Contenido de /opt ---\n")
-            f.write(data.get("opt_contents", "No se pudo obtener información.\n"))
-            
-            f.write("\n--- Elementos Inesperados en / ---\n")
-            f.write(data.get("unexpected_root_files", "No se pudo obtener información.\n"))
-            
-            f.write("\n--- Logs Escribibles y logrotate ---\n")
-            writable_logs = data.get("writable_logs", {})
-            for key, value in writable_logs.items():
-                f.write(f"{key}: {value}\n")
+            f.write("\n--- Respaldos ---\n")
+            backups = data.get("backups", {})
+            for key, value in backups.items():
+                f.write(f"{key}:\n{value}\n")
         
-        print(f"[+] Informe generado: {output_file}")
+        print(f"[+] Informe generado: {report_path}")
     except Exception as e:
         print(f"[-] Error al generar el informe: {str(e)}")
 
-
 if __name__ == "__main__":
-    # Ejecutar todas las funciones y generar el informe
-    data = {
-        "shell_scripts": "\n".join(list_shell_scripts_in_path()),
-        "broken_symlinks": "\n".join(find_broken_symlinks()),
-        "executables": find_executables_added_by_users(),
-        "opt_contents": analyze_opt_directory(),
-        "unexpected_root_files": "\n".join(find_unexpected_root_files()),
-        "writable_logs": writable_logs_and_logrotate(),
-    }
+    data = gather_data()
     generate_report(data)
