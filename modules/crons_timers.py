@@ -2,23 +2,23 @@ import os
 import subprocess
 
 def analyze_running_processes():
-    """Analiza los procesos en ejecuciÃ³n y el usuario que los ejecuta."""
+    """Analyzes running processes and the user executing them."""
     try:
         processes = subprocess.getoutput("ps aux")
         return processes
     except Exception as e:
-        return f"Error al analizar los procesos en ejecuciÃ³n: {str(e)}"
+        return f"Error analyzing running processes: {str(e)}"
 
 def search_credential_processes():
-    """Busca procesos que podrÃ­an almacenar credenciales en memoria."""
+    """Searches for processes that might store credentials in memory."""
     try:
         suspicious_processes = subprocess.getoutput("ps aux | grep -i 'ssh\\|login\\|passwd\\|gpg\\|vault'")
-        return suspicious_processes if suspicious_processes else "No se encontraron procesos sospechosos."
+        return suspicious_processes if suspicious_processes else "No suspicious processes found."
     except Exception as e:
-        return f"Error al buscar procesos que podrÃ­an almacenar credenciales: {str(e)}"
+        return f"Error searching for processes that might store credentials: {str(e)}"
 
 def analyze_cron_jobs():
-    """Analiza tareas programadas en cron, anacron, incron y at."""
+    """Analyzes scheduled tasks in cron, anacron, incron, and at."""
     try:
         cron_jobs = subprocess.getoutput("cat /etc/crontab; crontab -l 2>/dev/null; ls /etc/cron.d")
         anacron_jobs = subprocess.getoutput("ls /etc/anacrontab")
@@ -31,25 +31,25 @@ def analyze_cron_jobs():
             "At Jobs": at_jobs,
         }
     except Exception as e:
-        return f"Error al analizar tareas programadas: {str(e)}"
+        return f"Error analyzing scheduled tasks: {str(e)}"
 
 def analyze_systemd_timers():
-    """Analiza timers configurados en el sistema a travÃ©s de systemd."""
+    """Analyzes timers configured in the system through systemd."""
     try:
         timers = subprocess.getoutput("systemctl list-timers --all")
-        return timers if timers else "No se encontraron timers configurados."
+        return timers if timers else "No timers configured."
     except Exception as e:
-        return f"Error al analizar timers en systemd: {str(e)}"
+        return f"Error analyzing systemd timers: {str(e)}"
 
 def create_report_directory():
-    """Crea la carpeta 'report' si no existe."""
+    """Creates the 'report' directory if it does not exist."""
     report_dir = os.path.join(os.getcwd(), "report")
     if not os.path.exists(report_dir):
         os.makedirs(report_dir)
     return report_dir
 
 def gather_data():
-    """Recoge toda la informaciÃ³n del mÃ³dulo y la devuelve como un diccionario."""
+    """Collects all module information and returns it as a dictionary."""
     return {
         "running_processes": analyze_running_processes(),
         "suspicious_processes": search_credential_processes(),
@@ -58,32 +58,32 @@ def gather_data():
     }
 
 def generate_report(data, output_file="crons_timers_report.txt"):
-    """Genera un informe en texto plano con los resultados obtenidos."""
+    """Generates a plain text report with the obtained results."""
     try:
-        # Crear el directorio report
+        # Create the report directory
         report_dir = create_report_directory()
         report_path = os.path.join(report_dir, output_file)
         
-        with open(report_path, "w") as f:
-            f.write("=== Informe de Cron Jobs y Timers ===\n")
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write("=== Cron Jobs and Timers Report ===\n")
             
-            f.write("\n--- Procesos en EjecuciÃ³n ---\n")
-            f.write(data.get("running_processes", "No se pudo obtener la informaciÃ³n de los procesos.\n"))
+            f.write("\n--- Running Processes ---\n")
+            f.write(data.get("running_processes", "Could not retrieve process information.\n"))
             
-            f.write("\n--- Procesos que podrÃ­an Almacenar Credenciales ---\n")
-            f.write(data.get("suspicious_processes", "No se encontraron procesos sospechosos.\n"))
+            f.write("\n--- Processes that Might Store Credentials ---\n")
+            f.write(data.get("suspicious_processes", "No suspicious processes found.\n"))
             
-            f.write("\n--- Tareas Programadas ---\n")
+            f.write("\n--- Scheduled Tasks ---\n")
             cron_jobs = data.get("cron_jobs", {})
             for key, value in cron_jobs.items():
                 f.write(f"{key}:\n{value}\n")
             
-            f.write("\n--- Timers del Sistema ---\n")
-            f.write(data.get("systemd_timers", "No se encontraron timers configurados.\n"))
+            f.write("\n--- System Timers ---\n")
+            f.write(data.get("systemd_timers", "No timers configured.\n"))
         
-        print(f"[+] Informe generado: {report_path}")
+        print(f"[+] Report generated: {report_path}")
     except Exception as e:
-        print(f"[-] Error al generar el informe: {str(e)}")
+        print(f"[-] Error generating the report: {str(e)}")
 
 if __name__ == "__main__":
     data = gather_data()
