@@ -2,7 +2,7 @@ import os
 import subprocess
 
 def check_container_tools():
-    """Comprueba si herramientas relacionadas con contenedores estÃ¡n instaladas en el sistema."""
+    """Comprueba si herramientas relacionadas con contenedores están instaladas en el sistema."""
     tools = ["docker", "podman", "kubectl", "containerd", "runc", "amicontained"]
     installed_tools = {}
     for tool in tools:
@@ -77,7 +77,7 @@ def generate_report(data, output_file="container_info_report.txt"):
         report_dir = create_report_directory()
         report_path = os.path.join(report_dir, output_file)
         
-        with open(report_path, "w") as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write("=== Informe de InformaciÃ³n de Contenedores ===\n")
             
             f.write("\n--- Herramientas de Contenedores Instaladas ---\n")
